@@ -1,17 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ink Spread Interaction</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- Paper.js CDN -->
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+  <title>Click Ink Effect</title>
+  <style>
+    body, html { margin: 0; padding: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
 </head>
 <body>
-  <canvas id="myCanvas" resize></canvas>
+  <canvas id="inkCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById("inkCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-  <!-- 연결된 JS -->
-  <script src="script.js" type="text/paperscript" canvas="myCanvas"></script>
+    const inkBlots = [];
+
+    function createInkBlot(x, y) {
+      inkBlots.push({ x, y, radius: 1, alpha: 0.3 });
+    }
+
+    function drawInkBlot(blot) {
+      const gradient = ctx.createRadialGradient(
+        blot.x, blot.y, 0,
+        blot.x, blot.y, blot.radius
+      );
+      gradient.addColorStop(0, `rgba(0,0,0,${blot.alpha})`);
+      gradient.addColorStop(1, `rgba(0,0,0,0)`);
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(blot.x, blot.y, blot.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      inkBlots.forEach(blot => {
+        drawInkBlot(blot);
+        blot.radius += 2;
+        blot.alpha *= 0.97;
+      });
+      requestAnimationFrame(animate);
+    }
+
+    canvas.addEventListener("click", (e) => {
+      createInkBlot(e.clientX, e.clientY);
+    });
+
+    animate();
+  </script>
 </body>
 </html>
