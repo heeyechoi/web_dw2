@@ -2,55 +2,67 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Click Ink Effect</title>
+  <title>잉크 멍 효과</title>
   <style>
-    body, html { margin: 0; padding: 0; overflow: hidden; }
+    html, body { margin: 0; padding: 0; overflow: hidden; background: #fff; }
     canvas { display: block; }
   </style>
 </head>
 <body>
-  <canvas id="inkCanvas"></canvas>
-  <script>
-    const canvas = document.getElementById("inkCanvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+<canvas id="canvas"></canvas>
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
-    const inkBlots = [];
+  const inkSpots = [];
 
-    function createInkBlot(x, y) {
-      inkBlots.push({ x, y, radius: 1, alpha: 0.3 });
-    }
-
-    function drawInkBlot(blot) {
-      const gradient = ctx.createRadialGradient(
-        blot.x, blot.y, 0,
-        blot.x, blot.y, blot.radius
-      );
-      gradient.addColorStop(0, `rgba(0,0,0,${blot.alpha})`);
-      gradient.addColorStop(1, `rgba(0,0,0,0)`);
-
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.arc(blot.x, blot.y, blot.radius, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      inkBlots.forEach(blot => {
-        drawInkBlot(blot);
-        blot.radius += 2;
-        blot.alpha *= 0.97;
+  function createInkSpot(x, y) {
+    let particles = [];
+    for (let i = 0; i < 800; i++) {
+      const angle = Math.random() * 2 * Math.PI;
+      const radius = Math.random() * 2;
+      const speed = Math.random() * 1 + 0.5;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius,
+        alpha: 1,
+        life: 0
       });
-      requestAnimationFrame(animate);
+    }
+    inkSpots.push(particles);
+  }
+
+  function animate() {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < inkSpots.length; i++) {
+      let particles = inkSpots[i];
+      for (let j = 0; j < particles.length; j++) {
+        let p = particles[j];
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(0, 0, 0, ${p.alpha})`;
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha *= 0.96;
+        p.life++;
+      }
     }
 
-    canvas.addEventListener("click", (e) => {
-      createInkBlot(e.clientX, e.clientY);
-    });
+    requestAnimationFrame(animate);
+  }
 
-    animate();
-  </script>
+  canvas.addEventListener('click', (e) => {
+    createInkSpot(e.clientX, e.clientY);
+  });
+
+  animate();
+</script>
 </body>
 </html>
