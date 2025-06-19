@@ -2,67 +2,86 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>잉크 멍 효과</title>
+  <title>멍 잉크 퍼짐</title>
   <style>
-    html, body { margin: 0; padding: 0; overflow: hidden; background: #fff; }
+    html, body { margin: 0; padding: 0; background: white; overflow: hidden; }
     canvas { display: block; }
   </style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
 <script>
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-  const inkSpots = [];
+const maskImage = new Image();
+maskImage.src = "wang.png";  // 반드시 같은 폴더에 wang.png
 
-  function createInkSpot(x, y) {
-    let particles = [];
-    for (let i = 0; i < 800; i++) {
+let maskLoaded = false;
+maskImage.onload = () => { maskLoaded = true; }
+
+const inkSpots = [];
+
+function createInkText(x, y) {
+  const size = 200;
+  const offCanvas = document.createElement("canvas");
+  offCanvas.width = size;
+  offCanvas.height = size;
+  const offCtx = offCanvas.getContext("2d");
+
+  offCtx.drawImage(maskImage, 0, 0, size, size);
+  const maskData = offCtx.getImageData(0, 0, size, size);
+
+  let particles = [];
+  for (let i = 0; i < 1000; i++) {
+    const px = Math.floor(Math.random() * size);
+    const py = Math.floor(Math.random() * size);
+    const index = (py * size + px) * 4;
+
+    const alpha = maskData.data[index + 3];
+    if (alpha > 100) {
       const angle = Math.random() * 2 * Math.PI;
-      const radius = Math.random() * 2;
-      const speed = Math.random() * 1 + 0.5;
+      const speed = Math.random() * 1.5;
       particles.push({
-        x, y,
+        x: x + px - size / 2,
+        y: y + py - size / 2,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        radius,
-        alpha: 1,
-        life: 0
+        radius: Math.random() * 1.5 + 0.5,
+        alpha: 1
       });
     }
-    inkSpots.push(particles);
   }
 
-  function animate() {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  inkSpots.push(particles);
+}
 
-    for (let i = 0; i < inkSpots.length; i++) {
-      let particles = inkSpots[i];
-      for (let j = 0; j < particles.length; j++) {
-        let p = particles[j];
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(0, 0, 0, ${p.alpha})`;
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fill();
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha *= 0.96;
-        p.life++;
-      }
+function animate() {
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let particles of inkSpots) {
+    for (let p of particles) {
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(0,0,0,${p.alpha})`;
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fill();
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha *= 0.96;
     }
-
-    requestAnimationFrame(animate);
   }
 
-  canvas.addEventListener('click', (e) => {
-    createInkSpot(e.clientX, e.clientY);
-  });
+  requestAnimationFrame(animate);
+}
 
-  animate();
+canvas.addEventListener("click", (e) => {
+  if (maskLoaded) createInkText(e.clientX, e.clientY);
+});
+
+animate();
 </script>
 </body>
 </html>
