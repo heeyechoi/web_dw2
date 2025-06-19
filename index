@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ink Spread Interaction</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Paper.js CDN -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+</head>
+<body>
+  <canvas id="myCanvas" resize></canvas>
+
+  <!-- 연결된 JS -->
+  <script src="script.js" type="text/paperscript" canvas="myCanvas"></script>
+</body>
+</html>
