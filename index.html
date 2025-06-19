@@ -16,8 +16,9 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+// 마스크 이미지 설정 (멍 이미지)
 const maskImage = new Image();
-maskImage.src = "5b98e2d9-dda0-45f1-b667-a0995e7724d0.png"; // 이미지와 같은 경로에 둘 것
+maskImage.src = "wang.png";  // 실제 멍... 이미지 파일 이름
 let maskLoaded = false;
 maskImage.onload = () => { maskLoaded = true; }
 
@@ -53,56 +54,4 @@ function createInkFromMask(x, y, amount = 600) {
       particles.push({
         x: x + px - size / 2,
         y: y + py - size / 2,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        radius: Math.random() * 2.2 + 0.8,
-        alpha: 0, // 처음엔 0으로 시작 → 차오르게
-        targetAlpha: Math.random() * 0.6 + 0.4,
-        color: color
-      });
-    }
-  }
-
-  inkSpots.push(particles);
-}
-
-function animate() {
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  for (let particles of inkSpots) {
-    for (let p of particles) {
-      ctx.beginPath();
-      ctx.fillStyle = p.color.replace("ALPHA", p.alpha.toFixed(2));
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fill();
-      p.x += p.vx;
-      p.y += p.vy;
-
-      // 천천히 알파값 증가 후 감소
-      if (p.alpha < p.targetAlpha) p.alpha += 0.02;
-      else p.alpha *= 0.96;
-    }
-  }
-
-  requestAnimationFrame(animate);
-}
-
-canvas.addEventListener("click", (e) => {
-  if (maskLoaded) createInkFromMask(e.clientX, e.clientY, 800);
-});
-
-// 마우스 움직임 감지 – 천천히 채워지는 느낌
-let lastDraw = 0;
-canvas.addEventListener("mousemove", (e) => {
-  const now = performance.now();
-  if (now - lastDraw > 100 && maskLoaded) {
-    createInkFromMask(e.clientX, e.clientY, 100); // 작게 천천히
-    lastDraw = now;
-  }
-});
-
-animate();
-</script>
-</body>
-</html>
+        vx: Ma
