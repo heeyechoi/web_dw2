@@ -17,15 +17,14 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const maskImage = new Image();
-maskImage.src = "wang.png";  // 반드시 같은 폴더에 wang.png
-
+maskImage.src = "5b98e2d9-dda0-45f1-b667-a0995e7724d0.png"; // 이미지와 같은 경로에 둘 것
 let maskLoaded = false;
 maskImage.onload = () => { maskLoaded = true; }
 
 const inkSpots = [];
 
-function createInkText(x, y) {
-  const size = 200;
+function createInkFromMask(x, y, amount = 600) {
+  const size = 300;
   const offCanvas = document.createElement("canvas");
   offCanvas.width = size;
   offCanvas.height = size;
@@ -35,7 +34,7 @@ function createInkText(x, y) {
   const maskData = offCtx.getImageData(0, 0, size, size);
 
   let particles = [];
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < amount; i++) {
     const px = Math.floor(Math.random() * size);
     const py = Math.floor(Math.random() * size);
     const index = (py * size + px) * 4;
@@ -43,14 +42,23 @@ function createInkText(x, y) {
     const alpha = maskData.data[index + 3];
     if (alpha > 100) {
       const angle = Math.random() * 2 * Math.PI;
-      const speed = Math.random() * 1.5;
+      const speed = Math.random() * 0.8;
+
+      let baseColor = Math.random();
+      let color;
+      if (baseColor < 0.33) color = `rgba(0, 0, 0, ALPHA)`;
+      else if (baseColor < 0.66) color = `rgba(138, 43, 226, ALPHA)`; // 보라
+      else color = `rgba(255, 215, 0, ALPHA)`; // 노랑
+
       particles.push({
         x: x + px - size / 2,
         y: y + py - size / 2,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        radius: Math.random() * 1.5 + 0.5,
-        alpha: 1
+        radius: Math.random() * 2.2 + 0.8,
+        alpha: 0, // 처음엔 0으로 시작 → 차오르게
+        targetAlpha: Math.random() * 0.6 + 0.4,
+        color: color
       });
     }
   }
@@ -59,18 +67,21 @@ function createInkText(x, y) {
 }
 
 function animate() {
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   for (let particles of inkSpots) {
     for (let p of particles) {
       ctx.beginPath();
-      ctx.fillStyle = `rgba(0,0,0,${p.alpha})`;
+      ctx.fillStyle = p.color.replace("ALPHA", p.alpha.toFixed(2));
       ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
       ctx.fill();
       p.x += p.vx;
       p.y += p.vy;
-      p.alpha *= 0.96;
+
+      // 천천히 알파값 증가 후 감소
+      if (p.alpha < p.targetAlpha) p.alpha += 0.02;
+      else p.alpha *= 0.96;
     }
   }
 
@@ -78,7 +89,17 @@ function animate() {
 }
 
 canvas.addEventListener("click", (e) => {
-  if (maskLoaded) createInkText(e.clientX, e.clientY);
+  if (maskLoaded) createInkFromMask(e.clientX, e.clientY, 800);
+});
+
+// 마우스 움직임 감지 – 천천히 채워지는 느낌
+let lastDraw = 0;
+canvas.addEventListener("mousemove", (e) => {
+  const now = performance.now();
+  if (now - lastDraw > 100 && maskLoaded) {
+    createInkFromMask(e.clientX, e.clientY, 100); // 작게 천천히
+    lastDraw = now;
+  }
 });
 
 animate();
