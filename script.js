@@ -1,13 +1,13 @@
-// 클릭 위치에 번지는 잉크 효과 만들기
+// 클릭하면 검은색 잉크가 번지는 효과
 function onMouseDown(event) {
   let maxRadius = 100;
   let circle = new Path.Circle({
     center: event.point,
     radius: 0,
-    fillColor: new Color(0, 0, 0, 0.5), // 반투명 블랙
-    blendMode: 'multiply',
-    shadowColor: new Color(0, 0, 0),
-    shadowBlur: 20
+    fillColor: 'black',
+    shadowColor: 'black',
+    shadowBlur: 30,
+    blendMode: 'multiply'
   });
 
   circle.tween(
@@ -16,12 +16,11 @@ function onMouseDown(event) {
     {
       duration: 500,
       easing: 'easeInOutCubic',
-      update: function(event) {
+      update: function() {
         circle.scale(1.02);
-        circle.fillColor.alpha *= 0.97;
       },
       complete: function() {
-        circle.remove(); // 퍼진 후 사라지게
+        circle.remove(); // 확산 후 사라지기
       }
     }
   );
